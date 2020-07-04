@@ -5,6 +5,6 @@ module Matmul
   
 end
 
-
+require_relative './matmul/strategies/multithread_multiplication'
 require_relative './matmul/strategies/strassen_multiplication'
 require_relative './matmul/core_extensions'

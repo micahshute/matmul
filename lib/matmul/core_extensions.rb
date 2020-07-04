@@ -1,13 +1,15 @@
 module Matmul::CoreExtensions
     module MatrixMod
         module Multiplication
-            def matmul(m, strat: :strassen)
+            def matmul(m, strat: :multithread)
                 strats = {
                     :strassen => Matmul::StrassenMultiplication, 
                     :multithread => Matmul::MultithreadMultiplication
                 }
                 raise ArgumentError.new("strat must be :strassen or :multithread") if strats[strat].nil?
-                strats[strat].multiply(self, m)
+                raise Matrix::ErrDimensionMismatch if self.column_count != m.row_count
+                m1, m2 = strats[strat].preprocess(self, m)
+                strats[strat].multiply(m1, m2).slice(0...row_count, 0...m.column_count)
             end
         end
 
@@ -16,7 +18,6 @@ module Matmul::CoreExtensions
                 matarr = rowrng.map do |_|
                     colrng.map{|_| nil}.to_a
                 end.to_a
-                puts matarr.to_s
                 colrng.each do |col|
                     rowrng.each do |row|
                         matarr[row - rowrng.first][col - colrng.first] = self[row, col]
